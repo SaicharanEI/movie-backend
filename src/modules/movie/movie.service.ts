@@ -22,14 +22,15 @@ export class MovieService {
       throw new BadRequestException('Invalid data');
     }
 
-    const { title, publishedYear, image } = parsed.data;
-    console.log(title, publishedYear, image);
+    const { title, publishedYear, image, userId } = parsed.data;
+    console.log(title, publishedYear, image, userId);
     try {
       // Create and save the movie using Mongoose model
       const newMovie = new this.movieModel({
         title,
         publishedYear,
         image: image,
+        userId,
       });
 
       return await newMovie.save();

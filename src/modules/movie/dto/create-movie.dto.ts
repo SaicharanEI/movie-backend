@@ -2,6 +2,7 @@
 import { z } from 'zod';
 
 export const CreateMovieSchema = z.object({
+  userId: z.string(),
   title: z.string().nonempty('Title is required'),
   publishedYear: z
     .number()

@@ -5,6 +5,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 })
 export class Movie {
   @Prop()
+  userId: string;
+
+  @Prop()
   title: string;
 
   @Prop()

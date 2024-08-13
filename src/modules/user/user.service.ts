@@ -1,39 +1,30 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+// src/users/users.service.ts
 
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import * as mongoose from 'mongoose';
-import { User } from '../../modules/user/user.schema';
-import { SignUserDto, SignUserSchema } from './dto/sign-user.dto';
+import { Model } from 'mongoose';
+import { User } from './user.schema';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectModel(User.name)
-    private userModel: mongoose.Model<User>,
-  ) {}
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  async findOne(SignUserDto: SignUserDto): Promise<User> {
-    const parsed = SignUserSchema.safeParse(SignUserDto);
-
-    if (!parsed.success) {
-      throw new BadRequestException('Invalid data');
+  async createDefaultUser(email: string, password: string): Promise<void> {
+    const existingUser = await this.userModel.findOne({ email });
+    if (existingUser) {
+      console.log(`User with email ${email} already exists`);
+      return;
     }
 
-    const { username, password } = parsed.data;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await this.userModel.findOne({ username });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    const user = new this.userModel({
+      email,
+      password: hashedPassword,
+    });
 
-    if (user.password !== password) {
-      throw new BadRequestException('Invalid password');
-    }
-
-    return user;
+    await user.save();
+    console.log(`Default user with email ${email} created successfully`);
   }
 }

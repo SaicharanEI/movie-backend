@@ -1,8 +1,12 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MovieModule } from './modules/movie/movie.module';
 import { ConfigModule } from '@nestjs/config';
-import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UserService } from './modules/user/user.service';
+import { User, UserSchema } from './modules/user/user.schema';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -10,14 +14,23 @@ import { UserModule } from './modules/user/user.module';
       envFilePath: '.env',
       isGlobal: true,
     }),
-    MongooseModule.forRoot('mongodb://localhost:27017', {
+    MongooseModule.forRoot(process.env.DB_URI, {
       dbName: 'movie',
     }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+    }),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MovieModule,
-    UserModule,
+    AuthModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [UserService],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(private readonly userService: UserService) {}
+  async onModuleInit() {
+    await this.userService.createDefaultUser('admin@gmail.com', '12345678');
+  }
+}
 console.log(process.env.DB_URI);
