@@ -1,4 +1,3 @@
-// src/movie/movie.controller.ts
 import {
   Controller,
   Post,
@@ -9,19 +8,23 @@ import {
   UseInterceptors,
   UploadedFile,
   UseGuards,
-  Request, // Import Request decorator
+  Request,
+  Query,
+  BadRequestException,
+  UseFilters,
 } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { MulterInterceptor } from '../../common/interceptor/multer-interceptor';
-// import { UpdateMovieDto } from './dto/update-movie.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UpdateMovieDto } from './dto/update-movie';
+import { HttpExceptionFilter } from 'src/filter/http-exception.filter';
 
 @Controller('movies')
+@UseFilters(HttpExceptionFilter)
 @UseGuards(JwtAuthGuard)
 export class MovieController {
-  constructor(private readonly movieService: MovieService) {}
+  constructor(private movieService: MovieService) {}
 
   @Post()
   @UseInterceptors(MulterInterceptor)
@@ -30,8 +33,9 @@ export class MovieController {
     @UploadedFile() image: Express.Multer.File,
     @Request() req,
   ) {
+    console.log('image called');
     if (!createMovieDto || !image) {
-      throw new Error('Invalid data');
+      throw new BadRequestException('Invalid data');
     }
 
     const publishedYear = parseInt(
@@ -39,23 +43,37 @@ export class MovieController {
       10,
     );
     const { title } = createMovieDto;
-    const userId = req.user.sub; // Access the user ID from the request object
-    console.log(userId);
+    const userId = req.user.sub;
     const movieData = {
       title,
       publishedYear,
-      image: image.filename, // Save the path of the uploaded image
-      userId, // Include userId in movie data
+      image: image.filename,
+      userId,
     };
-    return this.movieService.createMovie(movieData);
+
+    const movie = await this.movieService.createMovie(movieData);
+    if (movie) {
+      return {
+        statusCode: 201,
+        message: 'Movie successfully created',
+        data: movie,
+      };
+    }
   }
 
   @Get()
   @UseInterceptors(MulterInterceptor)
-  async findAll() {
-    return this.movieService.findAll();
-  }
+  async findAll(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '8',
+    @Request() req,
+  ) {
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+    const userId = req.user.sub;
 
+    return this.movieService.findAll(pageNumber, limitNumber, userId);
+  }
   @Get(':id')
   @UseInterceptors(MulterInterceptor)
   async findById(@Param('id') id: string) {
@@ -71,7 +89,7 @@ export class MovieController {
     @Request() req, // Access the request object
   ) {
     if (!updateMovieDto || !image) {
-      throw new Error('Invalid data');
+      throw new BadRequestException('Invalid data');
     }
 
     const publishedYear = parseInt(
@@ -87,6 +105,13 @@ export class MovieController {
       image: image.filename, // Save the path of the uploaded image
       userId, // Include userId in movie data
     };
-    return this.movieService.updateById(id, movieData);
+    const movie = this.movieService.updateById(id, movieData);
+    if (movie) {
+      return {
+        statusCode: 200,
+        message: 'Movie details Updated',
+        data: movie,
+      };
+    }
   }
 }

@@ -1,4 +1,3 @@
-// src/auth/jwt-auth.guard.ts
 import {
   Injectable,
   CanActivate,
@@ -20,8 +19,6 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     const [, token] = authHeader.split(' ');
-
-    console.log(token, 'token');
     if (!token) {
       throw new UnauthorizedException('Invalid token');
     }
@@ -29,7 +26,7 @@ export class JwtAuthGuard implements CanActivate {
     try {
       const user = this.jwtService.verifyToken(token);
       console.log(user, 'user');
-      request.user = user; // Attach user info to the request object
+      request.user = user;
       return true;
     } catch (error) {
       throw new UnauthorizedException('Invalid token');

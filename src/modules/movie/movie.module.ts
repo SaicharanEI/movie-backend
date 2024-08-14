@@ -1,4 +1,3 @@
-// src/modules/movie/movie.module.ts
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MovieService } from './movie.service';
@@ -14,10 +13,3 @@ import { AuthModule } from '../auth/auth.module';
   controllers: [MovieController],
 })
 export class MovieModule {}
-
-// providers: [
-//   {
-//     provide: APP_GUARD,
-//     useClass: AuthGuard,
-//   },
-// ],

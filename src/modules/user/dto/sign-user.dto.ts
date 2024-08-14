@@ -1,8 +1,9 @@
 import { z } from 'zod';
 
 export const SignUserSchema = z.object({
-  email: z.string().nonempty('Email is required'),
-  password: z.string().nonempty('Password is required'),
+  email: z.string(),
+  password: z.string(),
+  rememberMe: z.boolean(),
 });
 
 export type SignUserDto = z.infer<typeof SignUserSchema>;

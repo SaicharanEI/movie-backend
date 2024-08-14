@@ -16,16 +16,13 @@ export class MovieService {
   ) {}
 
   async createMovie(createMovieDto: CreateMovieDto): Promise<Movie> {
-    // Validate the DTO using Zod schema
     const parsed = CreateMovieSchema.safeParse(createMovieDto);
     if (!parsed.success) {
       throw new BadRequestException('Invalid data');
     }
-
     const { title, publishedYear, image, userId } = parsed.data;
     console.log(title, publishedYear, image, userId);
     try {
-      // Create and save the movie using Mongoose model
       const newMovie = new this.movieModel({
         title,
         publishedYear,
@@ -39,8 +36,18 @@ export class MovieService {
     }
   }
 
-  async findAll(): Promise<Movie[]> {
-    return await this.movieModel.find().exec();
+  async findAll(
+    page: number,
+    limit: number,
+    userId: string,
+  ): Promise<{ data: Movie[]; total: number }> {
+    console.log(page, limit, userId);
+    const skip = (page - 1) * limit;
+    const [data, total] = await Promise.all([
+      this.movieModel.find({ userId: userId }).skip(skip).limit(limit).exec(),
+      this.movieModel.countDocuments({ userId: userId }).exec(),
+    ]);
+    return { data, total };
   }
 
   async findById(id: string): Promise<Movie> {
@@ -52,7 +59,6 @@ export class MovieService {
   }
 
   async updateById(id: string, updateMovieDto: CreateMovieDto): Promise<Movie> {
-    // Validate the DTO using Zod schema
     const parsed = CreateMovieSchema.safeParse(updateMovieDto);
     if (!parsed.success) {
       throw new BadRequestException('Invalid data');
@@ -75,14 +81,6 @@ export class MovieService {
       throw new NotFoundException('Movie not found.');
     }
 
-    return movie;
-  }
-
-  async deleteById(id: string): Promise<Movie> {
-    const movie = await this.movieModel.findByIdAndDelete(id).exec();
-    if (!movie) {
-      throw new NotFoundException('Movie not found.');
-    }
     return movie;
   }
 }

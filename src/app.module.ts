@@ -7,6 +7,8 @@ import { UserService } from './modules/user/user.service';
 import { User, UserSchema } from './modules/user/user.schema';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { APP_FILTER } from '@nestjs/core';
+import { HttpExceptionFilter } from './filter/http-exception.filter';
 
 @Module({
   imports: [
@@ -14,9 +16,7 @@ import { join } from 'path';
       envFilePath: '.env',
       isGlobal: true,
     }),
-    MongooseModule.forRoot(process.env.DB_URI, {
-      dbName: 'movie',
-    }),
+    MongooseModule.forRoot(process.env.DB_URI),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
     }),
@@ -25,7 +25,13 @@ import { join } from 'path';
     AuthModule,
   ],
   controllers: [],
-  providers: [UserService],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+    UserService,
+  ],
 })
 export class AppModule implements OnModuleInit {
   constructor(private readonly userService: UserService) {}
@@ -33,4 +39,3 @@ export class AppModule implements OnModuleInit {
     await this.userService.createDefaultUser('admin@gmail.com', '12345678');
   }
 }
-console.log(process.env.DB_URI);

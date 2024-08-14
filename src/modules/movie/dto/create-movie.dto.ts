@@ -1,4 +1,3 @@
-// src/modules/movie/dto/create-movie.dto.ts
 import { z } from 'zod';
 
 export const CreateMovieSchema = z.object({
