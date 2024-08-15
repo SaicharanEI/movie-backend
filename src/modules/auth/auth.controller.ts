@@ -23,7 +23,6 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: "Login successful" })
   async login(@Body() signUserDto: SignUserDto) {
-    console.log(signUserDto, "signUserDto");
     const { email, password, rememberMe } = signUserDto;
     const data = await this.authService.login(email, password, rememberMe);
     if (data) {

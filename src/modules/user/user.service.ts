@@ -11,12 +11,10 @@ export class UserService {
   async createDefaultUser(email: string, password: string): Promise<void> {
     const existingUser = await this.userModel.findOne({ email });
     if (existingUser) {
-      console.log(`User with email ${email} already exists`);
       return;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(hashedPassword);
     const user = new this.userModel({
       email,
       password: hashedPassword,

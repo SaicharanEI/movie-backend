@@ -49,16 +49,15 @@ export class MovieController {
   async create(
     @Body() createMovieDto: CreateMovieDto,
     @UploadedFile() image: Express.Multer.File,
-    @Request() req,
+    @Request() req
   ) {
-    console.log("image called");
     if (!createMovieDto || !image) {
       throw new BadRequestException("Invalid data");
     }
 
     const publishedYear = parseInt(
       createMovieDto.publishedYear as unknown as string,
-      10,
+      10
     );
     const { title } = createMovieDto;
     const userId = req.user.sub;
@@ -102,7 +101,7 @@ export class MovieController {
   async findAll(
     @Query("page") page: string = "1",
     @Query("limit") limit: string = "8",
-    @Request() req,
+    @Request() req
   ) {
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
@@ -156,7 +155,7 @@ export class MovieController {
     @Param("id") id: string,
     @Body() updateMovieDto: UpdateMovieDto,
     @UploadedFile() image: Express.Multer.File,
-    @Request() req,
+    @Request() req
   ) {
     if (!updateMovieDto) {
       throw new BadRequestException("Invalid data");
@@ -164,11 +163,10 @@ export class MovieController {
 
     const publishedYear = parseInt(
       updateMovieDto.publishedYear as unknown as string,
-      10,
+      10
     );
     const { title } = updateMovieDto;
     const userId = req.user.sub;
-    console.log(userId);
     const movieData = {
       title,
       publishedYear,
@@ -178,7 +176,6 @@ export class MovieController {
     const movie = await this.movieService.updateById(id, movieData);
     this.logger.debug("Logger initialization test");
     this.logger.log(movie, "Movie details Updated");
-    console.log(movie, "movie");
     if (movie) {
       return {
         status: 200,

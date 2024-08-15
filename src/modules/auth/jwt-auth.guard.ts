@@ -13,7 +13,6 @@ export class JwtAuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
-    console.log(authHeader);
     if (!authHeader) {
       throw new UnauthorizedException("No token provided");
     }
@@ -25,7 +24,6 @@ export class JwtAuthGuard implements CanActivate {
 
     try {
       const user = this.jwtService.verifyToken(token);
-      console.log(user, "user");
       request.user = user;
       return true;
     } catch (error) {
