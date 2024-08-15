@@ -3,8 +3,8 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
-} from '@nestjs/common';
-import { JwtService } from './jwt.service';
+} from "@nestjs/common";
+import { JwtService } from "./jwt.service";
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -15,21 +15,21 @@ export class JwtAuthGuard implements CanActivate {
     const authHeader = request.headers.authorization;
     console.log(authHeader);
     if (!authHeader) {
-      throw new UnauthorizedException('No token provided');
+      throw new UnauthorizedException("No token provided");
     }
 
-    const [, token] = authHeader.split(' ');
+    const [, token] = authHeader.split(" ");
     if (!token) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException("Invalid token");
     }
 
     try {
       const user = this.jwtService.verifyToken(token);
-      console.log(user, 'user');
+      console.log(user, "user");
       request.user = user;
       return true;
     } catch (error) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException("Invalid token");
     }
   }
 }

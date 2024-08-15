@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { multerOptions } from '../multer-config';
+import { Injectable } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { multerOptions } from "../multer-config";
 
 @Injectable()
 export class MulterInterceptor extends FileInterceptor(
-  'image',
+  "image",
   multerOptions,
 ) {}

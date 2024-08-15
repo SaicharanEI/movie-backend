@@ -14,7 +14,7 @@ import { UpdateMovieSchema } from "./dto/update-movie";
 export class MovieService {
   constructor(
     @InjectModel(Movie.name)
-    private movieModel: mongoose.Model<Movie>
+    private movieModel: mongoose.Model<Movie>,
   ) {}
 
   async createMovie(createMovieDto: CreateMovieDto): Promise<Movie> {
@@ -41,7 +41,7 @@ export class MovieService {
   async findAll(
     page: number,
     limit: number,
-    userId: string
+    userId: string,
   ): Promise<{ data: Movie[]; total: number }> {
     console.log(page, limit, userId);
     const skip = (page - 1) * limit;

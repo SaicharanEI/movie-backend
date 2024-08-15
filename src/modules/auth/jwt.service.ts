@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { JwtService as NestJwtService } from '@nestjs/jwt';
+import { Injectable } from "@nestjs/common";
+import { JwtService as NestJwtService } from "@nestjs/jwt";
 import {
   JWT_SECRET,
   JWT_EXPIRATION,
   JWT_EXPIRATION_DAYS,
-} from 'src/constants/jwt.constants';
+} from "src/constants/jwt.constants";
 @Injectable()
 export class JwtService {
   constructor(private readonly jwtService: NestJwtService) {}
