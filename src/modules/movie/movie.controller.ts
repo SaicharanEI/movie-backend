@@ -49,7 +49,7 @@ export class MovieController {
   async create(
     @Body() createMovieDto: CreateMovieDto,
     @UploadedFile() image: Express.Multer.File,
-    @Request() req
+    @Request() req,
   ) {
     if (!createMovieDto || !image) {
       throw new BadRequestException("Invalid data");
@@ -57,7 +57,7 @@ export class MovieController {
 
     const publishedYear = parseInt(
       createMovieDto.publishedYear as unknown as string,
-      10
+      10,
     );
     const { title } = createMovieDto;
     const userId = req.user.sub;
@@ -101,7 +101,7 @@ export class MovieController {
   async findAll(
     @Query("page") page: string = "1",
     @Query("limit") limit: string = "8",
-    @Request() req
+    @Request() req,
   ) {
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
@@ -155,7 +155,7 @@ export class MovieController {
     @Param("id") id: string,
     @Body() updateMovieDto: UpdateMovieDto,
     @UploadedFile() image: Express.Multer.File,
-    @Request() req
+    @Request() req,
   ) {
     if (!updateMovieDto) {
       throw new BadRequestException("Invalid data");
@@ -163,7 +163,7 @@ export class MovieController {
 
     const publishedYear = parseInt(
       updateMovieDto.publishedYear as unknown as string,
-      10
+      10,
     );
     const { title } = updateMovieDto;
     const userId = req.user.sub;
