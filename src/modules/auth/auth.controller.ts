@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseFilters } from "@nestjs/common";
+import { Controller, Post, Body, UseFilters, Logger } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { SignUserDto } from "../user/dto/sign-user.dto";
 import { HttpExceptionFilter } from "src/filter/http-exception.filter";
@@ -8,6 +8,7 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 @ApiTags("auth")
 @UseFilters(new HttpExceptionFilter())
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
   constructor(private authService: AuthService) {}
 
   @Post("login")
