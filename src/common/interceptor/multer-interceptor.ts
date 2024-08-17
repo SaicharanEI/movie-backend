@@ -5,5 +5,5 @@ import { multerOptions } from "../config/multer-config";
 @Injectable()
 export class MulterInterceptor extends FileInterceptor(
   "image",
-  multerOptions
+  multerOptions,
 ) {}
