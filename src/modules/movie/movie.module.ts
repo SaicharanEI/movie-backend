@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Logger, Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { MovieService } from "./movie.service";
 import { MovieController } from "./movie.controller";
@@ -9,7 +9,7 @@ import { AuthModule } from "../auth/auth.module";
     MongooseModule.forFeature([{ name: "Movie", schema: MovieSchema }]),
     AuthModule,
   ],
-  providers: [MovieService],
+  providers: [MovieService, Logger],
   controllers: [MovieController],
 })
 export class MovieModule {}

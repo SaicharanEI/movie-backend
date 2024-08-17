@@ -1,15 +1,20 @@
 import { Controller, Post, Body, UseFilters, Logger } from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { SignUserDto } from "../user/dto/sign-user.dto";
-import { HttpExceptionFilter } from "src/filter/http-exception.filter";
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { HttpExceptionFilter } from "src/filter/http-exception.filter";
+
+import { AuthService } from "./auth.service";
+import { LoginUserDto } from "./dto/login-auth.dto";
+// import { CustomLoggerService } from "src/logger/logger.service";
 
 @Controller("auth")
 @ApiTags("auth")
 @UseFilters(new HttpExceptionFilter())
 export class AuthController {
-  private readonly logger = new Logger(AuthController.name);
-  constructor(private authService: AuthService) {}
+  // private readonly logger = new CustomLoggerService();
+  constructor(
+    private authService: AuthService,
+    private readonly logger: Logger,
+  ) {}
 
   @Post("login")
   @ApiOperation({ summary: "Login" })
@@ -23,8 +28,8 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 200, description: "Login successful" })
-  async login(@Body() signUserDto: SignUserDto) {
-    const { email, password, rememberMe } = signUserDto;
+  async login(@Body() loginUserDto: LoginUserDto) {
+    const { email, password, rememberMe } = loginUserDto;
     const data = await this.authService.login(email, password, rememberMe);
     if (data) {
       return {

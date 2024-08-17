@@ -12,23 +12,21 @@ import {
   Query,
   BadRequestException,
   UseFilters,
-  Logger,
 } from "@nestjs/common";
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+
 import { MovieService } from "./movie.service";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { MulterInterceptor } from "../../common/interceptor/multer-interceptor";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { UpdateMovieDto } from "./dto/update-movie";
 import { HttpExceptionFilter } from "src/filter/http-exception.filter";
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 @Controller("movies")
 @ApiTags("movies")
-@UseFilters(HttpExceptionFilter)
+@UseFilters(new HttpExceptionFilter())
 @UseGuards(JwtAuthGuard)
 export class MovieController {
-  private readonly logger = new Logger(MovieController.name);
-
   constructor(private movieService: MovieService) {}
   @Post()
   @ApiOperation({ summary: "Create movie" })
@@ -49,7 +47,7 @@ export class MovieController {
   async create(
     @Body() createMovieDto: CreateMovieDto,
     @UploadedFile() image: Express.Multer.File,
-    @Request() req,
+    @Request() req
   ) {
     if (!createMovieDto || !image) {
       throw new BadRequestException("Invalid data");
@@ -57,14 +55,15 @@ export class MovieController {
 
     const publishedYear = parseInt(
       createMovieDto.publishedYear as unknown as string,
-      10,
+      10
     );
     const { title } = createMovieDto;
     const userId = req.user.sub;
+    console.log("userId", image?.filename);
     const movieData = {
       title,
       publishedYear,
-      image: image.filename,
+      image: image?.filename,
       userId,
     };
 
@@ -84,7 +83,6 @@ export class MovieController {
     schema: {
       example: {
         status: 200,
-        message: "Movie details",
         data: [
           {
             _id: "5f9f1b5b8f0b2c0b0b0b0b0b",
@@ -101,7 +99,7 @@ export class MovieController {
   async findAll(
     @Query("page") page: string = "1",
     @Query("limit") limit: string = "8",
-    @Request() req,
+    @Request() req
   ) {
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
@@ -115,7 +113,6 @@ export class MovieController {
     schema: {
       example: {
         status: 200,
-        message: "Movie details",
         data: {
           _id: "5f9f1b5b8f0b2c0b0b0b0b0b",
           title: "Avengers",
@@ -155,7 +152,7 @@ export class MovieController {
     @Param("id") id: string,
     @Body() updateMovieDto: UpdateMovieDto,
     @UploadedFile() image: Express.Multer.File,
-    @Request() req,
+    @Request() req
   ) {
     if (!updateMovieDto) {
       throw new BadRequestException("Invalid data");
@@ -163,7 +160,7 @@ export class MovieController {
 
     const publishedYear = parseInt(
       updateMovieDto.publishedYear as unknown as string,
-      10,
+      10
     );
     const { title } = updateMovieDto;
     const userId = req.user.sub;
@@ -174,8 +171,6 @@ export class MovieController {
       userId,
     };
     const movie = await this.movieService.updateById(id, movieData);
-    this.logger.debug("Logger initialization test");
-    this.logger.log(movie, "Movie details Updated");
     if (movie) {
       return {
         status: 200,

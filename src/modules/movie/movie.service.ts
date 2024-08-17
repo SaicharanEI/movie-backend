@@ -23,18 +23,15 @@ export class MovieService {
       throw new BadRequestException("Invalid data");
     }
     const { title, publishedYear, image, userId } = parsed.data;
-    try {
-      const newMovie = new this.movieModel({
-        title,
-        publishedYear,
-        image: image,
-        userId,
-      });
 
-      return await newMovie.save();
-    } catch (error) {
-      throw new InternalServerErrorException();
+    const movieUpdateData: Partial<Movie> = { title, publishedYear, userId };
+
+    if (image) {
+      movieUpdateData.image = image;
     }
+    const newMovie = new this.movieModel(movieUpdateData);
+
+    return await newMovie.save();
   }
 
   async findAll(

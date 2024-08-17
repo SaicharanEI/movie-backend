@@ -1,9 +1,10 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
+import * as bcrypt from "bcryptjs";
+
 import { User } from "../user/user.schema";
 import { JwtPayload } from "./jwt-payload.interface";
-import * as bcrypt from "bcryptjs";
 import { JwtService } from "./jwt.service";
 
 @Injectable()
@@ -24,11 +25,11 @@ export class AuthService {
     }
     const payload: JwtPayload = {
       email: user.email,
-      iat: Date.now(),
       sub: user._id,
     };
+    const access_token = this.jwtService.generateToken(payload, rememberMe);
     return {
-      access_token: this.jwtService.generateToken(payload, rememberMe),
+      access_token,
     };
   }
 }
