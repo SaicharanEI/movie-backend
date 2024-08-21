@@ -18,7 +18,7 @@ const devLogger = {
   format: format.combine(
     format.timestamp(),
     format.errors({ stack: true }),
-    customFormat,
+    customFormat
   ),
   transports: [new transports.Console(options.console)],
 };
@@ -27,7 +27,7 @@ const prodLogger = {
   format: format.combine(
     format.timestamp(),
     format.errors({ stack: true }),
-    format.json(),
+    format.json()
   ),
   transports: [
     new transports.File(options.file),

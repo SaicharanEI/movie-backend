@@ -6,14 +6,14 @@ import {
 import { InjectModel } from "@nestjs/mongoose";
 import * as mongoose from "mongoose";
 import { Movie } from "../../modules/movie/movie.schema";
-import { CreateMovieDto, CreateMovieSchema } from "./dto/create-movie.dto"; // Adjust the path to match your project structure
+import { CreateMovieDto, CreateMovieSchema } from "./dto/create-movie.dto";
 import { UpdateMovieSchema } from "./dto/update-movie";
 
 @Injectable()
 export class MovieService {
   constructor(
     @InjectModel(Movie.name)
-    private movieModel: mongoose.Model<Movie>,
+    private movieModel: mongoose.Model<Movie>
   ) {}
 
   async createMovie(createMovieDto: CreateMovieDto): Promise<Movie> {
@@ -36,7 +36,7 @@ export class MovieService {
   async findAll(
     page: number,
     limit: number,
-    userId: string,
+    userId: string
   ): Promise<{ data: Movie[]; total: number }> {
     const skip = (page - 1) * limit;
     const [data, total] = await Promise.all([

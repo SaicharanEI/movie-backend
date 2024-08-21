@@ -13,7 +13,13 @@ import {
   BadRequestException,
   UseFilters,
 } from "@nestjs/common";
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 
 import { MovieService } from "./movie.service";
 import { CreateMovieDto } from "./dto/create-movie.dto";
@@ -21,13 +27,18 @@ import { MulterInterceptor } from "../../common/interceptor/multer-interceptor";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { UpdateMovieDto } from "./dto/update-movie";
 import { HttpExceptionFilter } from "src/filter/http-exception.filter";
+import { RedisService } from "../redis/redis.service";
 
 @Controller("movies")
 @ApiTags("movies")
+@ApiBearerAuth("access-token")
 @UseFilters(new HttpExceptionFilter())
 @UseGuards(JwtAuthGuard)
 export class MovieController {
-  constructor(private movieService: MovieService) {}
+  constructor(
+    private movieService: MovieService,
+    private readonly redisService: RedisService
+  ) {}
   @Post()
   @ApiOperation({ summary: "Create movie" })
   @ApiBody({
@@ -47,19 +58,14 @@ export class MovieController {
   async create(
     @Body() createMovieDto: CreateMovieDto,
     @UploadedFile() image: Express.Multer.File,
-    @Request() req,
+    @Request() req
   ) {
+    createMovieDto.publishedYear = Number(createMovieDto.publishedYear);
     if (!createMovieDto || !image) {
       throw new BadRequestException("Invalid data");
     }
-
-    const publishedYear = parseInt(
-      createMovieDto.publishedYear as unknown as string,
-      10,
-    );
-    const { title } = createMovieDto;
+    const { title, publishedYear } = createMovieDto;
     const userId = req.user.sub;
-    console.log("userId", image?.filename);
     const movieData = {
       title,
       publishedYear,
@@ -69,6 +75,7 @@ export class MovieController {
 
     const movie = await this.movieService.createMovie(movieData);
     if (movie) {
+      await this.redisService.delByPattern(`movies_list:${userId}:*`);
       return {
         status: 201,
         message: "Movie successfully created",
@@ -99,13 +106,34 @@ export class MovieController {
   async findAll(
     @Query("page") page: string = "1",
     @Query("limit") limit: string = "8",
-    @Request() req,
+    @Request() req
   ) {
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
     const userId = req.user.sub;
 
-    return this.movieService.findAll(pageNumber, limitNumber, userId);
+    const cacheKey = `movies_list:${userId}:page=${pageNumber}:limit=${limitNumber}`;
+
+    const cachedMovies = await this.redisService.get(cacheKey);
+    if (cachedMovies) {
+      return {
+        status: 200,
+        data: JSON.parse(cachedMovies),
+      };
+    }
+
+    const movies = await this.movieService.findAll(
+      pageNumber,
+      limitNumber,
+      userId
+    );
+
+    await this.redisService.setEx(cacheKey, 900, JSON.stringify(movies));
+
+    return {
+      status: 200,
+      data: movies,
+    };
   }
   @Get(":id")
   @ApiOperation({ summary: "Get movie by id" })
@@ -126,7 +154,21 @@ export class MovieController {
   })
   @UseInterceptors(MulterInterceptor)
   async findById(@Param("id") id: string) {
-    return this.movieService.findById(id);
+    const cachedMovie = await this.redisService.get(`movie:${id}`);
+    if (cachedMovie) {
+      return {
+        status: 200,
+        data: JSON.parse(cachedMovie),
+      };
+    }
+    const movie = await this.movieService.findById(id);
+
+    await this.redisService.setEx(`movie:${id}`, 900, JSON.stringify(movie));
+
+    return {
+      status: 200,
+      data: movie,
+    };
   }
 
   @Put(":id")
@@ -152,17 +194,13 @@ export class MovieController {
     @Param("id") id: string,
     @Body() updateMovieDto: UpdateMovieDto,
     @UploadedFile() image: Express.Multer.File,
-    @Request() req,
+    @Request() req
   ) {
+    updateMovieDto.publishedYear = Number(updateMovieDto.publishedYear);
     if (!updateMovieDto) {
       throw new BadRequestException("Invalid data");
     }
-
-    const publishedYear = parseInt(
-      updateMovieDto.publishedYear as unknown as string,
-      10,
-    );
-    const { title } = updateMovieDto;
+    const { title, publishedYear } = updateMovieDto;
     const userId = req.user.sub;
     const movieData = {
       title,
@@ -172,6 +210,8 @@ export class MovieController {
     };
     const movie = await this.movieService.updateById(id, movieData);
     if (movie) {
+      await this.redisService.del(`movie:${id}`);
+      await this.redisService.delByPattern(`movies_list:${userId}:*`);
       return {
         status: 200,
         message: "Movie details Updated",

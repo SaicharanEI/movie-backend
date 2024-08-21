@@ -4,8 +4,8 @@ import { WinstonModule } from "nest-winston";
 
 import { AppModule } from "./app.module";
 import { HttpExceptionFilter } from "./filter/http-exception.filter";
-
 import { instance } from "./logger/winston.logger";
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: WinstonModule.createLogger({
@@ -20,7 +20,17 @@ async function bootstrap() {
     .setVersion("1.0")
     .addTag("movies")
     .addTag("auth")
+    .addBearerAuth(
+      {
+        type: "http",
+        scheme: "bearer",
+        in: "header",
+        bearerFormat: "JWT",
+      },
+      "access-token"
+    )
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api", app, document);
   app.enableCors({

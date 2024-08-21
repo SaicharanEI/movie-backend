@@ -4,16 +4,14 @@ import { HttpExceptionFilter } from "src/filter/http-exception.filter";
 
 import { AuthService } from "./auth.service";
 import { LoginUserDto } from "./dto/login-auth.dto";
-// import { CustomLoggerService } from "src/logger/logger.service";
 
 @Controller("auth")
 @ApiTags("auth")
 @UseFilters(new HttpExceptionFilter())
 export class AuthController {
-  // private readonly logger = new CustomLoggerService();
   constructor(
     private authService: AuthService,
-    private readonly logger: Logger,
+    private readonly logger: Logger
   ) {}
 
   @Post("login")
